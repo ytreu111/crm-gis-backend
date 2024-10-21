@@ -1,0 +1,20 @@
+model DirectoryField {
+  id           String             @id @default(cuid()) @map("_id")
+  name         String
+  type         DirectoryFieldType
+  required     Boolean            @default(false)
+  multiple     Boolean            @default(false)
+  order        Int
+  show_in_list Boolean            @default(true)
+  directory    Directory          @relation(fields: [directory_id], references: [id])
+  directory_id String
+}
+
+enum DirectoryFieldType {
+  integer
+  float
+  string
+  date
+  datetime
+  time
+}

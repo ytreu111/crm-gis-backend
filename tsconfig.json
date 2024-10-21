@@ -4,6 +4,7 @@
     "declaration": true,
     "removeComments": true,
     "emitDecoratorMetadata": true,
+    "allowJs": true,
     "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
     "target": "ES2021",
@@ -16,6 +17,23 @@
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
-    "noFallthroughCasesInSwitch": false
+    "noFallthroughCasesInSwitch": false,
+    "paths": {
+      "@services": [
+        "src/services/index"
+      ],
+      "@services/*": [
+        "src/services/*"
+      ],
+      "@pg-client": [
+        "prisma/generated/postgres/client/index"
+      ],
+      "@mg-client": [
+        "prisma/generated/mongo/client/index"
+      ],
+      "@mg-client/*": [
+        "prisma/generated/mongo/client/*"
+      ]
+    }
   }
 }

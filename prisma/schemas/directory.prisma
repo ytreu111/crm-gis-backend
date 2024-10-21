@@ -1,0 +1,6 @@
+model Directory {
+  id          String           @id @default(cuid()) @map("_id")
+  name        String
+  description String?
+  fields      DirectoryField[]
+}
