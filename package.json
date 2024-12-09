@@ -12,11 +12,9 @@
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
     "gen": "pnpm run /^generate:*/",
-    "generate:pg": "prisma generate --schema prisma/schema/postgres",
-    "generate:mg": "prisma generate --schema prisma/schema/mongo",
+    "generate:pg": "prisma generate --schema prisma/schema",
     "mig": "pnpm run /^generate:*/",
-    "migrate:pg": "prisma migrate dev --schema prisma/schema/postgres",
-    "migrate:mg": "prisma db push --schema prisma/schema/mongo",
+    "migrate:pg": "prisma migrate dev --schema prisma/schema",
     "prepare": "pnpm gen"
   },
   "dependencies": {
@@ -29,6 +27,7 @@
     "@prisma/client": "5.21.1",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
+    "cyrillic-to-translit-js": "^3.2.1",
     "mongoose": "^8.7.2",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1"

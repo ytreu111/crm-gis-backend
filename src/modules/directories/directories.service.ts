@@ -48,8 +48,10 @@ export class DirectoriesService {
 
   async update(id: string, directoryDto: CreateDirectoryDto) {
     const { fields, ...directory } = directoryDto;
-
-    await this.pgPrismaService.directory.update({ data: directory, where: { id: id } });
+    await this.pgPrismaService.directory.update({
+      data: directory,
+      where: { id: id },
+    });
 
     const directoryFields =
       await this.directoryFieldsService.findByDirectory(id);
@@ -60,7 +62,6 @@ export class DirectoriesService {
       .filter((el) => !updateFields.find((_el) => el.id === _el.id))
       .map((el) => el.id);
 
-    // Promise.all ??
     if (updateFields.length) {
       await this.directoryFieldsService.updateMany(updateFields);
     }

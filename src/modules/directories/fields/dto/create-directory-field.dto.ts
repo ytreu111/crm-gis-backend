@@ -1,5 +1,13 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsBoolean, IsEnum, IsNumber, IsString } from "class-validator";
+import {
+  IsBoolean,
+  IsEnum,
+  IsNumber,
+  IsOptional,
+  IsString,
+  IsNotEmpty,
+} from "class-validator";
+import {} from "class-transformer";
 
 enum DirectoryFieldTypeEnum {
   Integer = "integer",
@@ -12,8 +20,13 @@ enum DirectoryFieldTypeEnum {
 
 export class CreateDirectoryFieldDto {
   @ApiProperty()
-  @IsString()
+  @IsString({})
+  @IsNotEmpty()
   name: string;
+
+  @IsString()
+  @IsOptional()
+  code?: string;
 
   @ApiProperty({
     enum: DirectoryFieldTypeEnum,

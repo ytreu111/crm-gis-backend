@@ -1,7 +1,6 @@
 import { Module } from "@nestjs/common";
 import { ElementsController } from "./elements.controller";
 import { ElementsService } from "./elements.service";
-import { MongoPrismaService } from "@services";
 import { MongooseModule } from "@nestjs/mongoose";
 import { DirectoryElement, DirectoryElementSchema } from "./element.schema";
 
@@ -12,6 +11,6 @@ import { DirectoryElement, DirectoryElementSchema } from "./element.schema";
       { name: DirectoryElement.name, schema: DirectoryElementSchema },
     ]),
   ],
-  providers: [ElementsService, MongoPrismaService],
+  providers: [ElementsService],
 })
 export class ElementsModule {}

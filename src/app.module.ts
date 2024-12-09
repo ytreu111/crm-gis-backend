@@ -6,24 +6,20 @@ import { MongooseModule } from "@nestjs/mongoose";
 
 @Module({
   imports: [
-    ConfigModule.forRoot(),
+    ConfigModule.forRoot({ isGlobal: true }),
     // MongooseModule.forRoot("mongodb+srv://admin:admin@cluster0.mzzqv.mongodb.net/public?retryWrites=true&w=majority&appName=Cluster0", {
     // MongooseModule.forRoot("mongodb+srv://admin:admin@cluster0.mzzqv.mongodb.net/public?retryWrites=true&w=majority&appName=Cluster0", {
     //   auth: { username: "admin", password: "admin" },
     // }),
     MongooseModule.forRootAsync({
-      imports: [ConfigModule],
+      // imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => {
-        const a = configService.get<string>('MONGO_DATABASE_URL')
-        console.log(configService);
-
-        return {
-          uri: configService.get<string>('MONGO_DATABASE_URL')
-        }
-      },
+      useFactory: (configService: ConfigService) => ({
+        uri: configService.get<string>("MONGO_DATABASE_URL"),
+        dbName: configService.get<string>("MONGO_DB_NAME"),
+      }),
     }),
-    // FieldsModule,
+    FieldsModule,
     DirectoriesModule,
   ],
 })

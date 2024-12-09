@@ -3,8 +3,6 @@ import {
   Controller,
   Get,
   Post,
-  UsePipes,
-  ValidationPipe,
   NotFoundException,
   Put,
   Param,
@@ -37,11 +35,10 @@ export class DirectoriesController {
 
   @Get(":directory_id/fields")
   getDirectoryFields(@Param("directory_id") id: string) {
-    return this.directoryFieldsService.findByDirectory(id);
+    return this.directoryFieldsService.findByDirectory(id, );
   }
 
   @Post()
-  @UsePipes(new ValidationPipe())
   @ApiBody({ type: CreateDirectoryDto })
   create(@Body() createDirectoryDto: CreateDirectoryDto) {
     return this.directoriesService.create(createDirectoryDto);
