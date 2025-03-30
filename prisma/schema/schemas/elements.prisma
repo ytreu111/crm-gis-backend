@@ -1,0 +1,7 @@
+model Elements {
+  id   String @id @default(cuid()) @map("_id")
+  data Json
+
+  directory    Directory @relation(fields: [directory_id], references: [id])
+  directory_id String
+}

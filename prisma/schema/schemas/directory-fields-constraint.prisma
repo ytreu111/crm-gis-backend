@@ -1,0 +1,76 @@
+model DirectoryFieldConstraint {
+  id                    String                    @id @default(cuid()) @map("_id")
+  field                 DirectoryField            @relation(fields: [field_id], references: [id], onDelete: Cascade)
+  field_id              String                    @unique
+  integer_constraint    IntegerFieldConstraint?
+  string_constraint     StringFieldContraint?
+  date_constraint       DateFieldContraint?
+  datetime_constraint   DateTimeFieldContraint?
+  time_constraint       TimeFieldContraint?
+  point_constraint      PointFieldContraint?
+  linestring_constraint LineStringFieldContraint?
+  polygon_constraint    PolygonFieldContraint?
+  // relation_constraint RelationFieldContraint?
+}
+
+model IntegerFieldConstraint {
+  id  String @id @default(cuid()) @map("_id")
+  min_value Int?
+  max_value Int?
+  default_value Int?
+
+  constraint    DirectoryFieldConstraint @relation(fields: [constraint_id], references: [id], onDelete: Cascade)
+  constraint_id String                   @unique
+}
+
+model StringFieldContraint {
+  id String @id @default(cuid()) @map("_id")
+  min_length Int?
+  max_length Int?
+  default_value String?
+
+  constraint    DirectoryFieldConstraint @relation(fields: [constraint_id], references: [id], onDelete: Cascade)
+  constraint_id String                   @unique
+}
+
+model DateFieldContraint {
+  id String @id @default(cuid()) @map("_id")
+
+  constraint    DirectoryFieldConstraint @relation(fields: [constraint_id], references: [id], onDelete: Cascade)
+  constraint_id String                   @unique
+}
+
+model DateTimeFieldContraint {
+  id String @id @default(cuid()) @map("_id")
+
+  constraint    DirectoryFieldConstraint @relation(fields: [constraint_id], references: [id])
+  constraint_id String                   @unique
+}
+
+model TimeFieldContraint {
+  id String @id @default(cuid()) @map("_id")
+
+  constraint    DirectoryFieldConstraint @relation(fields: [constraint_id], references: [id], onDelete: Cascade)
+  constraint_id String                   @unique
+}
+
+model PointFieldContraint {
+  id String @id @default(cuid()) @map("_id")
+
+  constraint    DirectoryFieldConstraint @relation(fields: [constraint_id], references: [id], onDelete: Cascade)
+  constraint_id String                   @unique
+}
+
+model LineStringFieldContraint {
+  id String @id @default(cuid()) @map("_id")
+
+  constraint    DirectoryFieldConstraint @relation(fields: [constraint_id], references: [id], onDelete: Cascade)
+  constraint_id String                   @unique
+}
+
+model PolygonFieldContraint {
+  id String @id @default(cuid()) @map("_id")
+
+  constraint    DirectoryFieldConstraint @relation(fields: [constraint_id], references: [id], onDelete: Cascade)
+  constraint_id String                   @unique
+}
