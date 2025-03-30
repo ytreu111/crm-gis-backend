@@ -21,10 +21,10 @@ export class CreateFieldDto {
   @IsOptional()
   required?: boolean
 
-  @ApiPropertyOptional({ default: false })
-  @IsBoolean()
-  @IsOptional()
-  multiple?: boolean
+  // @ApiPropertyOptional({ default: false })
+  // @IsBoolean()
+  // @IsOptional()
+  // multiple?: boolean
 
   @ApiProperty()
   @IsNumber()
