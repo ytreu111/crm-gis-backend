@@ -12,9 +12,9 @@ CREATE TABLE "DirectoryFieldConstraint" (
 -- CreateTable
 CREATE TABLE "IntegerFieldConstraint" (
     "_id" TEXT NOT NULL,
-    "min" INTEGER,
-    "max" INTEGER,
-    "default" INTEGER,
+    "min_value" INTEGER,
+    "max_value" INTEGER,
+    "default_value" INTEGER,
     "constraint_id" TEXT NOT NULL,
 
     CONSTRAINT "IntegerFieldConstraint_pkey" PRIMARY KEY ("_id")
@@ -23,8 +23,9 @@ CREATE TABLE "IntegerFieldConstraint" (
 -- CreateTable
 CREATE TABLE "StringFieldContraint" (
     "_id" TEXT NOT NULL,
+    "min_length" INTEGER,
     "max_length" INTEGER,
-    "default" TEXT,
+    "default_value" TEXT,
     "constraint_id" TEXT NOT NULL,
 
     CONSTRAINT "StringFieldContraint_pkey" PRIMARY KEY ("_id")
@@ -111,6 +112,17 @@ CREATE TABLE "Elements" (
     CONSTRAINT "Elements_pkey" PRIMARY KEY ("_id")
 );
 
+-- CreateTable
+CREATE TABLE "Layer" (
+    "_id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "active" BOOLEAN NOT NULL DEFAULT true,
+    "directory_id" TEXT NOT NULL,
+    "field_id" TEXT NOT NULL,
+
+    CONSTRAINT "Layer_pkey" PRIMARY KEY ("_id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "DirectoryFieldConstraint_field_id_key" ON "DirectoryFieldConstraint"("field_id");
 
@@ -170,3 +182,9 @@ ALTER TABLE "DirectoryField" ADD CONSTRAINT "DirectoryField_directory_id_fkey" F
 
 -- AddForeignKey
 ALTER TABLE "Elements" ADD CONSTRAINT "Elements_directory_id_fkey" FOREIGN KEY ("directory_id") REFERENCES "Directory"("_id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Layer" ADD CONSTRAINT "Layer_directory_id_fkey" FOREIGN KEY ("directory_id") REFERENCES "Directory"("_id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Layer" ADD CONSTRAINT "Layer_field_id_fkey" FOREIGN KEY ("field_id") REFERENCES "DirectoryField"("_id") ON DELETE CASCADE ON UPDATE CASCADE;

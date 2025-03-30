@@ -18,7 +18,8 @@ model DirectoryField {
   code         String
   type         DirectoryFieldType
   required     Boolean            @default(false)
-  multiple     Boolean            @default(false)
+  // Временно убран
+  // multiple     Boolean            @default(false)
   order        Int
   show_in_list Boolean            @default(true)
 
@@ -26,4 +27,6 @@ model DirectoryField {
   directory_id String
 
   constraint DirectoryFieldConstraint?
+
+  layers Layer[]
 }

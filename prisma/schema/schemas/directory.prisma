@@ -4,5 +4,5 @@ model Directory {
   description String?
   fields      DirectoryField[]
   elements    Elements[]
-  // layers      Layer[]
+  layers      Layer[]
 }

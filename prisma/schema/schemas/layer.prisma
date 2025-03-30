@@ -1,7 +1,11 @@
-// model Layer {
-//   id   String @id @default(cuid()) @map("_id")
-//   name String
-//
-//   directory    Directory @relation(fields: [directory_id], references: [id])
-//   directory_id String
-// }
+model Layer {
+  id   String @id @default(cuid()) @map("_id")
+  name String
+  active Boolean @default(true)
+
+  directory    Directory @relation(fields: [directory_id], references: [id], onDelete: Cascade)
+  directory_id String
+
+  field    DirectoryField @relation(fields: [field_id], references: [id], onDelete: Cascade)
+  field_id String
+}
