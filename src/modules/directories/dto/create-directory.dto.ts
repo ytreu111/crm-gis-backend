@@ -1,21 +1,31 @@
-import { ApiProperty } from '@nestjs/swagger'
-import { IsArray, IsOptional, IsString, ValidateNested } from 'class-validator'
-import { CreateDirectoryFieldDto } from '../fields/dto/create-directory-field.dto'
-import { Type } from 'class-transformer'
+import { ApiExtraModels, ApiProperty, ApiPropertyOptional, getSchemaPath } from '@nestjs/swagger'
+import { IsArray, IsOptional, IsString, ValidateNested, ArrayNotEmpty } from 'class-validator'
+import { CreateIntegerFieldDto } from '@/modules/fields/dto/models/create-integer-field.dto'
+import { CreateStringFieldDto } from '@/modules/fields/dto/models/create-string-field.dto'
+import { IsDirectoryField } from '@/modules/fields/decorators/IsDirectoryField'
 
+
+@ApiExtraModels(CreateStringFieldDto, CreateIntegerFieldDto)
 export class CreateDirectoryDto {
   @ApiProperty()
   @IsString()
-  name: string;
+  name: string
 
-  @ApiProperty()
+  @ApiPropertyOptional()
   @IsOptional()
   @IsString()
-  description?: string;
+  description?: string
 
-  @ApiProperty({ type: () => [CreateDirectoryFieldDto] })
+  @ApiProperty({
+    isArray: true,
+    anyOf: [
+      { $ref: getSchemaPath(CreateIntegerFieldDto) },
+      { $ref: getSchemaPath(CreateStringFieldDto) },
+    ],
+  })
+  @ValidateNested({ each: true })
   @IsArray()
-  @ValidateNested()
-  @Type(() => CreateDirectoryFieldDto)
-  fields: CreateDirectoryFieldDto[];
+  @ArrayNotEmpty()
+  @IsDirectoryField()
+  fields: (CreateIntegerFieldDto | CreateStringFieldDto)[]
 }

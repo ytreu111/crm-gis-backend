@@ -1,77 +1,80 @@
-import { Injectable } from "@nestjs/common";
-import { CreateDirectoryDto } from "./dto/create-directory.dto";
-import { FieldsService } from "./fields/fields.service";
-import { PgPrismaService } from "@services";
+import { Injectable } from '@nestjs/common'
+import { CreateDirectoryDto } from './dto/create-directory.dto'
+import { PgPrismaService } from '@/modules/database'
+import { FieldsService } from '@/modules/fields'
+
 
 @Injectable()
 export class DirectoriesService {
   constructor(
     private readonly pgPrismaService: PgPrismaService,
-    private readonly directoryFieldsService: FieldsService,
+    private readonly fieldsService: FieldsService,
   ) {}
 
+  async findAll() {
+    return this.pgPrismaService.directory.findMany()
+  }
+
   async findById(id: string) {
-    return this.pgPrismaService.directory.findFirst({ where: { id } });
-  }
-
-  async getWithFieldsById(id: string) {
-    return this.pgPrismaService.directory.findFirst({
-      where: { id },
-      include: { fields: { orderBy: { order: "asc" } } },
-    });
-  }
-
-  async getAll() {
-    return this.pgPrismaService.directory.findMany();
-  }
-
-  async getAllWithFields() {
-    return this.pgPrismaService.directory.findMany({
-      include: { fields: { orderBy: { order: "asc" } } },
-    });
+    return this.pgPrismaService.directory.findFirst({ where: { id } })
   }
 
   async create(directoryDto: CreateDirectoryDto) {
-    const { fields, ...directory } = directoryDto;
+    const { fields, ...directoryFields } = directoryDto
 
-    const createdDirectory = await this.pgPrismaService.directory.create({
-      data: directory,
-    });
+    return this.pgPrismaService.$transaction(async (tx) => {
+      const fieldServicePrismaService = this.fieldsService.pgPrismaService
 
-    const createdFields = await this.directoryFieldsService.manyCreate(
-      fields,
-      createdDirectory.id,
-    );
+      try {
+        const directory = await tx.directory.create({
+          data: directoryFields,
+        })
 
-    return { ...createdDirectory, fields: createdFields };
+        // @ts-expect-error надо так для транзакции
+        this.fieldsService.pgPrismaService = tx
+        const _fields = await this.fieldsService.createMany(directory.id, fields)
+
+        return {
+          ...directory,
+          fields: _fields,
+        }
+      } catch (e) {
+        throw e
+      } finally {
+        this.fieldsService.pgPrismaService = fieldServicePrismaService
+      }
+    })
   }
 
-  async update(id: string, directoryDto: CreateDirectoryDto) {
-    const { fields, ...directory } = directoryDto;
-    await this.pgPrismaService.directory.update({
-      data: directory,
-      where: { id: id },
-    });
+  update(id: string, directoryDto: CreateDirectoryDto) {
+    const { fields, ...directoryFields } = directoryDto
+    const fieldServicePrismaService = this.fieldsService.pgPrismaService
 
-    const directoryFields =
-      await this.directoryFieldsService.findByDirectory(id);
+    return this.pgPrismaService.$transaction(async (tx) => {
+      try {
+        // @ts-expect-error надо так для транзакции
+        this.fieldsService.pgPrismaService = tx
 
-    const createFields = fields.filter((el) => !el.id);
-    const updateFields = fields.filter((el) => !!el.id);
-    const deleteFields = directoryFields
-      .filter((el) => !updateFields.find((_el) => el.id === _el.id))
-      .map((el) => el.id);
+        const directory = await tx.directory.update({
+          where: { id: id },
+          data: directoryFields,
+        })
 
-    if (updateFields.length) {
-      await this.directoryFieldsService.updateMany(updateFields);
-    }
-    if (createFields.length) {
-      await this.directoryFieldsService.manyCreate(createFields, id);
-    }
-    if (deleteFields.length) {
-      await this.directoryFieldsService.deleteMany(deleteFields);
-    }
+        const _fields = await this.fieldsService.updateDirectoryFields(id, fields)
 
-    return this.getWithFieldsById(id);
+        return {
+          ...directory,
+          fields: _fields,
+        }
+      } catch (e) {
+        throw e
+      } finally {
+        this.fieldsService.pgPrismaService = fieldServicePrismaService
+      }
+    })
+  }
+
+  delete(id: string) {
+    return this.pgPrismaService.directory.delete({ where: { id } })
   }
 }
