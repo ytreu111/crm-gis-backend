@@ -3,4 +3,6 @@ model Directory {
   name        String
   description String?
   fields      DirectoryField[]
+  elements    Elements[]
+  // layers      Layer[]
 }

@@ -1,3 +1,17 @@
+enum DirectoryFieldType {
+  integer
+  string
+  date
+  datetime
+  time
+
+  point
+  linestring
+  polygon
+
+  // relation
+}
+
 model DirectoryField {
   id           String             @id @default(cuid()) @map("_id")
   name         String
@@ -7,15 +21,9 @@ model DirectoryField {
   multiple     Boolean            @default(false)
   order        Int
   show_in_list Boolean            @default(true)
-  directory    Directory          @relation(fields: [directory_id], references: [id])
-  directory_id String
-}
 
-enum DirectoryFieldType {
-  integer
-  float
-  string
-  date
-  datetime
-  time
+  directory    Directory @relation(fields: [directory_id], references: [id], onDelete: Cascade)
+  directory_id String
+
+  constraint DirectoryFieldConstraint?
 }
