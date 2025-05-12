@@ -5,11 +5,12 @@ import {
   Post,
   NotFoundException,
   Put,
-  Param, Delete,
+  Param,
+  Delete,
 } from '@nestjs/common'
-import { CreateDirectoryDto } from './dto/create-directory.dto'
-import { ApiBody, ApiTags } from '@nestjs/swagger'
+import { ApiBody, ApiTags, ApiOkResponse, ApiCreatedResponse } from '@nestjs/swagger'
 import { DirectoriesService } from './directories.service'
+import { CreateDirectoryDto, DirectoryResponseDto, DirectoryWithFieldsResponseDto } from './dto'
 
 @ApiTags('Directories')
 @Controller()
@@ -19,28 +20,35 @@ export class DirectoriesController {
   ) {}
 
   @Get()
-  list() {
-    return this.directoriesService.findAll()
+  @ApiOkResponse({ type: [DirectoryResponseDto] })
+  async list() {
+    const directories = await this.directoriesService.findAll()
+    return directories.map((el) => new DirectoryResponseDto(el))
   }
 
   @Get(':id')
+  @ApiOkResponse({ type: DirectoryResponseDto })
   async retrieve(@Param('id') id: string) {
     const directory = await this.directoriesService.findById(id)
 
     if (!directory) throw new NotFoundException()
 
-    return directory
+    return new DirectoryResponseDto(directory)
   }
 
   @Post()
+  @ApiCreatedResponse({ type: DirectoryWithFieldsResponseDto })
   @ApiBody({ type: CreateDirectoryDto })
-  create(
+  async create(
     @Body() createDirectoryDto: CreateDirectoryDto,
   ) {
-    return this.directoriesService.create(createDirectoryDto)
+    const directory = await this.directoriesService.create(createDirectoryDto)
+
+    return new DirectoryWithFieldsResponseDto(directory, directory.fields)
   }
 
   @Put(':id')
+  @ApiOkResponse({ type: DirectoryWithFieldsResponseDto })
   @ApiBody({ type: CreateDirectoryDto })
   async update(
     @Param('id') id: string,
@@ -50,7 +58,7 @@ export class DirectoriesController {
 
     if (!directory) throw new NotFoundException()
 
-    return directory
+    return new DirectoryWithFieldsResponseDto(directory, directory.fields)
   }
 
   @Delete(':id')

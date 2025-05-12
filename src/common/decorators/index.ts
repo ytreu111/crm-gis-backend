@@ -1,1 +1,1 @@
-export { NotImplementedError } from './NotImplementedError'
+export { NotImplementedErrorDecorator } from './not-implemented-error.decorator'

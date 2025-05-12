@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common'
-import { PgPrismaService } from '@/modules/database'
 import { DirectoriesService } from './directories.service'
 import { DirectoriesController } from './directories.controller'
 import { FieldsModule } from '@/modules/fields'
@@ -10,7 +9,6 @@ import { FieldsModule } from '@/modules/fields'
   ],
   providers: [
     DirectoriesService,
-    PgPrismaService,
   ],
   imports: [
     FieldsModule,

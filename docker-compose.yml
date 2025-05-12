@@ -55,13 +55,25 @@ services:
 
   pgadmin:
     image: dpage/pgadmin4:latest
-    container_name: pgadmin4_container
+    container_name: pgadmin4
     ports:
       - "8888:80"
     volumes:
       - ./.storage/pgadmin:/var/lib/pgadmin
     env_file:
       - .env
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./.storage/prometheus:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
 
 #networks:
 #  mongodb_network:

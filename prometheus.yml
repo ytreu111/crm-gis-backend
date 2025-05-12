@@ -1,0 +1,11 @@
+global:
+  scrape_interval: 1s
+
+scrape_configs:
+  - job_name: 'crm-backend'
+    metrics_path: '/api/server-metrics'
+    static_configs:
+      - targets: ['host.docker.internal:8000']
+#        labels:
+#          service: 'prisma-metrics'
+#          group: 'production'

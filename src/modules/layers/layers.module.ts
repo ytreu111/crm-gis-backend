@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common'
 import { LayersService } from './layers.service'
 import { LayersController } from './layers.controller'
-import { PgPrismaService } from '@/modules/database'
+import { PrismaClientService } from '@/modules/database'
 
 @Module({
   providers: [
-    PgPrismaService,
+    PrismaClientService,
     LayersService,
   ],
   controllers: [

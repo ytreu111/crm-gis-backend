@@ -1,0 +1,1 @@
+export { QueryRequiredDecorator } from './query-required.decorator'

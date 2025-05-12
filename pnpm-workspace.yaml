@@ -1,0 +1,8 @@
+onlyBuiltDependencies:
+  - '@contrast/fn-inspect'
+  - '@newrelic/native-metrics'
+  - '@prisma/client'
+  - '@prisma/engines'
+  - '@sentry-internal/node-cpu-profiler'
+  - prisma
+  - protobufjs

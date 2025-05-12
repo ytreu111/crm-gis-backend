@@ -1,0 +1,35 @@
+enum DirectoryFieldType {
+  integer
+  string
+  date
+  datetime
+  time
+
+  point
+  linestring
+  polygon
+
+  // relation
+}
+
+model DirectoryField {
+  id           String             @id @default(cuid()) @map("_id")
+  name         String
+  code         String
+  type         DirectoryFieldType
+  required     Boolean            @default(false)
+  // Временно убран
+  // multiple     Boolean            @default(false)
+  order        Int
+  show_in_list Boolean            @default(true)
+
+  directory    Directory @relation(fields: [directory_id], references: [id], onDelete: Cascade)
+  directory_id String
+
+  constraint DirectoryFieldConstraint?
+
+  layers Layer[]
+
+  @@index([directory_id])
+  @@unique([directory_id, code])
+}

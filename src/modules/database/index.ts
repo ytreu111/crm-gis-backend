@@ -1,1 +1,2 @@
-export { PgPrismaService } from './pg-prisma.service'
+export { PrismaService } from './prisma.service'
+export { PrismaModule } from './prisma.module'

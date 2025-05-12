@@ -1,14 +1,16 @@
-import { Prisma } from '@prisma/client'
+import { Prisma } from '@prisma-client'
 
 export function fieldSelectWithConstraint() {
   return {
-    omit: { directory_id: true },
+    // omit: { directory_id: true },
     include: {
       constraint: {
-        omit: { id: true, field_id: true },
-        include: {
-          string_constraint: { omit: { constraint_id: true, id: true } },
-          integer_constraint: { omit: { constraint_id: true, id: true } },
+        select: {
+          string_constraint: { omit: { id: true, constraint_id: true } },
+          integer_constraint: { omit: { id: true, constraint_id: true } },
+          date_constraint: { omit: { id: true, constraint_id: true } },
+          datetime_constraint: { omit: { id: true, constraint_id: true } },
+          time_constraint: { omit: { id: true, constraint_id: true } },
         },
       },
     },

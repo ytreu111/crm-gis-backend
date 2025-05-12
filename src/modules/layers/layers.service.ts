@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common'
-import { PgPrismaService } from '@/modules/database'
+import { PrismaClientService } from '@/modules/database'
 import { LayerDto } from './dto/layer.dto'
 
 @Injectable()
 export class LayersService {
   constructor(
-    private readonly pgPrismaService: PgPrismaService,
+    private readonly pgPrismaService: PrismaClientService,
   ) {}
 
   findAll() {

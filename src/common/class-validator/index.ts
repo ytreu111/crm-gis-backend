@@ -1,0 +1,1 @@
+export { IsCuid } from './is-cuid.decorator'

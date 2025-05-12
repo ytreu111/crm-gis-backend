@@ -1,0 +1,164 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["metrics", "tracing"]
+  output          = "../../src/generated/prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("PG_DATABASE_URL")
+}
+
+model DirectoryFieldConstraint {
+  id                    String                    @id @default(cuid()) @map("_id")
+  field                 DirectoryField            @relation(fields: [field_id], references: [id], onDelete: Cascade)
+  field_id              String                    @unique
+  integer_constraint    IntegerFieldConstraint?
+  string_constraint     StringFieldContraint?
+  date_constraint       DateFieldContraint?
+  datetime_constraint   DateTimeFieldContraint?
+  time_constraint       TimeFieldContraint?
+  point_constraint      PointFieldContraint?
+  linestring_constraint LineStringFieldContraint?
+  polygon_constraint    PolygonFieldContraint?
+  // relation_constraint RelationFieldContraint?
+}
+
+model IntegerFieldConstraint {
+  id String @id @default(cuid()) @map("_id")
+
+  min_value     Int?
+  max_value     Int?
+  default_value Int?
+
+  constraint    DirectoryFieldConstraint @relation(fields: [constraint_id], references: [id], onDelete: Cascade)
+  constraint_id String                   @unique
+}
+
+model StringFieldContraint {
+  id String @id @default(cuid()) @map("_id")
+
+  min_length    Int?
+  max_length    Int?
+  default_value String?
+
+  constraint    DirectoryFieldConstraint @relation(fields: [constraint_id], references: [id], onDelete: Cascade)
+  constraint_id String                   @unique
+}
+
+model DateFieldContraint {
+  id String @id @default(cuid()) @map("_id")
+
+  min_value     String?
+  max_value     String?
+  default_value String?
+
+  constraint    DirectoryFieldConstraint @relation(fields: [constraint_id], references: [id], onDelete: Cascade)
+  constraint_id String                   @unique
+}
+
+model DateTimeFieldContraint {
+  id String @id @default(cuid()) @map("_id")
+
+  min_value     DateTime?
+  max_value     DateTime?
+  default_value DateTime?
+
+  constraint    DirectoryFieldConstraint @relation(fields: [constraint_id], references: [id])
+  constraint_id String                   @unique
+}
+
+model TimeFieldContraint {
+  id String @id @default(cuid()) @map("_id")
+
+  min_value     String?
+  max_value     String?
+  default_value String?
+
+  constraint    DirectoryFieldConstraint @relation(fields: [constraint_id], references: [id], onDelete: Cascade)
+  constraint_id String                   @unique
+}
+
+model PointFieldContraint {
+  id String @id @default(cuid()) @map("_id")
+
+  constraint    DirectoryFieldConstraint @relation(fields: [constraint_id], references: [id], onDelete: Cascade)
+  constraint_id String                   @unique
+}
+
+model LineStringFieldContraint {
+  id String @id @default(cuid()) @map("_id")
+
+  constraint    DirectoryFieldConstraint @relation(fields: [constraint_id], references: [id], onDelete: Cascade)
+  constraint_id String                   @unique
+}
+
+model PolygonFieldContraint {
+  id String @id @default(cuid()) @map("_id")
+
+  constraint    DirectoryFieldConstraint @relation(fields: [constraint_id], references: [id], onDelete: Cascade)
+  constraint_id String                   @unique
+}
+
+enum DirectoryFieldType {
+  integer
+  string
+  date
+  datetime
+  time
+
+  point
+  linestring
+  polygon
+
+  // relation
+}
+
+model DirectoryField {
+  id           String             @id @default(cuid()) @map("_id")
+  name         String
+  code         String
+  type         DirectoryFieldType
+  required     Boolean            @default(false)
+  // Временно убран
+  // multiple     Boolean            @default(false)
+  order        Int
+  show_in_list Boolean            @default(true)
+
+  directory    Directory @relation(fields: [directory_id], references: [id], onDelete: Cascade)
+  directory_id String
+
+  constraint DirectoryFieldConstraint?
+
+  layers Layer[]
+}
+
+model Directory {
+  id          String           @id @default(cuid()) @map("_id")
+  name        String
+  description String?
+  fields      DirectoryField[]
+  elements    Elements[]
+  layers      Layer[]
+}
+
+model Elements {
+  id       String  @id @default(cuid()) @map("_id")
+  data     Json
+  is_valid Boolean @default(true)
+
+  directory    Directory @relation(fields: [directory_id], references: [id])
+  directory_id String
+}
+
+model Layer {
+  id     String  @id @default(cuid()) @map("_id")
+  name   String
+  active Boolean @default(true)
+
+  directory    Directory @relation(fields: [directory_id], references: [id], onDelete: Cascade)
+  directory_id String
+
+  field    DirectoryField @relation(fields: [field_id], references: [id], onDelete: Cascade)
+  field_id String
+}

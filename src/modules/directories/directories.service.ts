@@ -1,29 +1,28 @@
 import { Injectable } from '@nestjs/common'
-import { CreateDirectoryDto } from './dto/create-directory.dto'
-import { PgPrismaService } from '@/modules/database'
+import { CreateDirectoryDto } from './dto'
 import { FieldsService } from '@/modules/fields'
-
+import { PrismaService } from '@/modules/database/prisma.service'
 
 @Injectable()
 export class DirectoriesService {
   constructor(
-    private readonly pgPrismaService: PgPrismaService,
     private readonly fieldsService: FieldsService,
+    private readonly prismaService: PrismaService,
   ) {}
 
-  async findAll() {
-    return this.pgPrismaService.directory.findMany()
+  findAll() {
+    return this.prismaService.directory.findMany()
   }
 
-  async findById(id: string) {
-    return this.pgPrismaService.directory.findFirst({ where: { id } })
+  findById(id: string) {
+    return this.prismaService.directory.findFirst({ where: { id } })
   }
 
   async create(directoryDto: CreateDirectoryDto) {
     const { fields, ...directoryFields } = directoryDto
 
-    return this.pgPrismaService.$transaction(async (tx) => {
-      const fieldServicePrismaService = this.fieldsService.pgPrismaService
+    return this.prismaService.$transaction(async (tx) => {
+      const fieldServicePrismaService = this.fieldsService.prismaService
 
       try {
         const directory = await tx.directory.create({
@@ -31,7 +30,7 @@ export class DirectoriesService {
         })
 
         // @ts-expect-error надо так для транзакции
-        this.fieldsService.pgPrismaService = tx
+        this.fieldsService.prismaService = tx
         const _fields = await this.fieldsService.createMany(directory.id, fields)
 
         return {
@@ -41,19 +40,19 @@ export class DirectoriesService {
       } catch (e) {
         throw e
       } finally {
-        this.fieldsService.pgPrismaService = fieldServicePrismaService
+        this.fieldsService.prismaService = fieldServicePrismaService
       }
     })
   }
 
   update(id: string, directoryDto: CreateDirectoryDto) {
     const { fields, ...directoryFields } = directoryDto
-    const fieldServicePrismaService = this.fieldsService.pgPrismaService
+    const fieldServicePrismaService = this.fieldsService.prismaService
 
-    return this.pgPrismaService.$transaction(async (tx) => {
+    return this.prismaService.$transaction(async (tx) => {
       try {
         // @ts-expect-error надо так для транзакции
-        this.fieldsService.pgPrismaService = tx
+        this.fieldsService.prismaService = tx
 
         const directory = await tx.directory.update({
           where: { id: id },
@@ -69,12 +68,12 @@ export class DirectoriesService {
       } catch (e) {
         throw e
       } finally {
-        this.fieldsService.pgPrismaService = fieldServicePrismaService
+        this.fieldsService.prismaService = fieldServicePrismaService
       }
     })
   }
 
   delete(id: string) {
-    return this.pgPrismaService.directory.delete({ where: { id } })
+    return this.prismaService.directory.delete({ where: { id } })
   }
 }

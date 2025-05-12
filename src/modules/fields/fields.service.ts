@@ -1,50 +1,48 @@
-import { Prisma } from '@prisma/client'
+import { DirectoryFieldType, Prisma } from '@prisma-client'
 import { Injectable } from '@nestjs/common'
-import { PgPrismaService } from '@/modules/database'
-import { fieldSelectWithConstraint } from './lib/prisma/field-select-with-constraint'
-import { parseFieldConstraint } from './lib/parse-field-constraint'
+import { plainFieldToInstance, fieldSelectWithConstraint } from './lib'
 import { CreateFieldType } from './model/fields.model'
-import { UpdateFieldBodyDto } from './dto/body/update-field-body.dto'
+import { omit } from 'lodash'
+import { PrismaService } from '@/modules/database'
 
 @Injectable()
 export class FieldsService {
   constructor(
-    public pgPrismaService: PgPrismaService,
+    public prismaService: PrismaService,
   ) {}
 
-  async findAll({ directoryId }: { directoryId?: string }) {
-    let fields = await this.pgPrismaService.directoryField.findMany({
+  async findAll({ directoryId }: { directoryId: string }) {
+    const fields = await this.prismaService.directoryField.findMany({
       where: { directory_id: directoryId },
+      orderBy: { order: 'asc' },
       ...fieldSelectWithConstraint(),
     })
 
-    fields = fields.map(parseFieldConstraint)
-
-    return fields
+    return fields.map(plainFieldToInstance)
   }
 
   async findById(fieldId: string) {
-    const field = await this.pgPrismaService.directoryField.findFirst({
+    const field = await this.prismaService.directoryField.findFirst({
       where: { id: fieldId },
       ...fieldSelectWithConstraint(),
     })
 
-    return field ? parseFieldConstraint(field) : null
+    if (!field) return null
+
+    return plainFieldToInstance(field)
   }
 
-  async create(directory_id: string, field: CreateFieldType) {
+  create(directory_id: string, field: CreateFieldType) {
     const createFieldData = this.prepareCreateField(directory_id, field)
 
-    const createdField = await this.pgPrismaService.directoryField.create({
+    return this.prismaService.directoryField.create({
       data: createFieldData,
       ...fieldSelectWithConstraint(),
     })
-
-    return parseFieldConstraint(createdField)
   }
 
-  async update(fieldId: string, body: UpdateFieldBodyDto) {
-    const field = await this.pgPrismaService.directoryField.findFirst({
+  async update(fieldId: string, body) {
+    const field = await this.prismaService.directoryField.findFirst({
       where: { id: fieldId },
       select: { type: true },
     })
@@ -53,18 +51,15 @@ export class FieldsService {
 
     const preparedUpdateData = this.prepareUpdateField(body, field)
 
-    const updateField = await this.pgPrismaService.directoryField
-      .update({
-        ...fieldSelectWithConstraint(),
-        where: { id: fieldId },
-        data: preparedUpdateData,
-      })
-
-    return parseFieldConstraint(updateField)
+    return this.prismaService.directoryField.update({
+      ...fieldSelectWithConstraint(),
+      where: { id: fieldId },
+      data: preparedUpdateData,
+    })
   }
 
   delete(fieldId: string) {
-    return this.pgPrismaService.directoryField.delete({ where: { id: fieldId } })
+    return this.prismaService.directoryField.delete({ where: { id: fieldId } })
   }
 
   createMany(directory_id: string, fields: CreateFieldType[]) {
@@ -77,7 +72,7 @@ export class FieldsService {
 
   async updateMany(fields) {
     const ids = fields.map((f) => f.id)
-    const updatedDbFields = await this.pgPrismaService.directoryField.findMany({ where: { id: { in: ids } } })
+    const updatedDbFields = await this.prismaService.directoryField.findMany({ where: { id: { in: ids } } })
 
     const updatePromises = fields.map((f) => {
       const dbField = updatedDbFields.find((d) => d.id === f.id)
@@ -86,7 +81,7 @@ export class FieldsService {
 
       const preparedData = this.prepareUpdateField(f, dbField)
 
-      return this.pgPrismaService.directoryField
+      return this.prismaService.directoryField
         .update({
           where: { id: f.id },
           data: preparedData,
@@ -97,13 +92,13 @@ export class FieldsService {
   }
 
   deleteMany(deleteIds: string[]) {
-    return this.pgPrismaService.directoryField.deleteMany({
+    return this.prismaService.directoryField.deleteMany({
       where: { id: { in: deleteIds } },
     })
   }
 
   async updateDirectoryFields(directory_id: string, fields: CreateFieldType[]) {
-    const directoryFields = await this.pgPrismaService.directoryField.findMany({ where: { directory_id } })
+    const directoryFields = await this.prismaService.directoryField.findMany({ where: { directory_id } })
     const promiseList: Array<Promise<any>> = []
 
     const createFields = fields.filter((field) => !field.id)
@@ -125,37 +120,53 @@ export class FieldsService {
 
     await Promise.all(promiseList)
 
-    const resultFields = await this.pgPrismaService.directoryField.findMany({
+    return this.prismaService.directoryField.findMany({
       where: { directory_id },
       ...fieldSelectWithConstraint(),
     })
-
-    return resultFields.map(parseFieldConstraint)
   }
 
   private prepareCreateField(directory_id: string, field: CreateFieldType): Prisma.DirectoryFieldUncheckedCreateInput {
-    const { constraint, ...otherFieldFields } = field
-
     let _constraint: Prisma.DirectoryFieldConstraintCreateWithoutFieldInput
 
-    switch (otherFieldFields.type) {
-      case 'string': {
+    switch (field.type) {
+      case DirectoryFieldType.string: {
         _constraint = {
-          string_constraint: { create: constraint as Prisma.StringFieldContraintCreateWithoutConstraintInput },
+          string_constraint: { create: field.constraint },
         }
         break
       }
-      case 'integer': {
+      case DirectoryFieldType.integer: {
         _constraint = {
-          integer_constraint: { create: constraint as Prisma.IntegerFieldConstraintCreateWithoutConstraintInput },
+          integer_constraint: { create: field.constraint },
         }
         break
       }
+      case DirectoryFieldType.date: {
+        _constraint = {
+          date_constraint: { create: field.constraint },
+        }
+        break
+      }
+      case DirectoryFieldType.datetime: {
+        _constraint = {
+          datetime_constraint: { create: field.constraint },
+        }
+        break
+      }
+      case DirectoryFieldType.time: {
+        _constraint = {
+          time_constraint: { create: field.constraint },
+        }
+        break
+      }
+      default:
+        throw Error('not supported type')
     }
 
     return {
       directory_id,
-      ...otherFieldFields,
+      ...omit(field, 'constraint'),
       constraint: {
         create: _constraint,
       },
@@ -174,48 +185,108 @@ export class FieldsService {
       const newType = databaseField.type
 
       switch (oldType) {
-        case 'string': {
+        case DirectoryFieldType.string: {
           deleteConstraint = {
             string_constraint: { delete: true },
           }
           break
         }
-        case 'integer': {
+        case DirectoryFieldType.integer: {
           deleteConstraint = {
             integer_constraint: { delete: true },
           }
           break
         }
+        case DirectoryFieldType.date: {
+          deleteConstraint = {
+            date_constraint: { delete: true },
+          }
+          break
+        }
+        case DirectoryFieldType.datetime: {
+          deleteConstraint = {
+            datetime_constraint: { delete: true },
+          }
+          break
+        }
+        case DirectoryFieldType.time: {
+          deleteConstraint = {
+            time_constraint: { delete: true },
+          }
+          break
+        }
+        default:
+          throw Error('not supported type')
       }
 
       switch (newType) {
-        case 'string': {
+        case DirectoryFieldType.string: {
           createConstraint = {
             string_constraint: { create: constraint as Prisma.StringFieldContraintUncheckedCreateWithoutConstraintInput },
           }
           break
         }
-        case 'integer': {
+        case DirectoryFieldType.integer: {
           createConstraint = {
             integer_constraint: { create: constraint as Prisma.IntegerFieldConstraintUncheckedCreateWithoutConstraintInput },
           }
           break
         }
+        case DirectoryFieldType.date: {
+          createConstraint = {
+            date_constraint: { create: constraint as Prisma.DateFieldContraintUncheckedCreateWithoutConstraintInput },
+          }
+          break
+        }
+        case DirectoryFieldType.datetime: {
+          createConstraint = {
+            datetime_constraint: { create: constraint as Prisma.DateTimeFieldContraintUncheckedCreateWithoutConstraintInput },
+          }
+          break
+        }
+        case DirectoryFieldType.time: {
+          createConstraint = {
+            time_constraint: { create: constraint as Prisma.TimeFieldContraintUncheckedCreateWithoutConstraintInput },
+          }
+          break
+        }
+        default:
+          throw Error('not supported type')
       }
     } else {
       switch (otherFieldFields.type) {
-        case 'string': {
+        case DirectoryFieldType.string: {
           updateConstraint = {
             string_constraint: { update: constraint as Prisma.StringFieldContraintUpdateWithoutConstraintInput },
           }
           break
         }
-        case 'integer': {
+        case DirectoryFieldType.integer: {
           updateConstraint = {
             integer_constraint: { update: constraint as Prisma.IntegerFieldConstraintUpdateWithoutConstraintInput },
           }
           break
         }
+        case DirectoryFieldType.date: {
+          updateConstraint = {
+            date_constraint: { update: constraint as Prisma.DateFieldContraintUpdateWithoutConstraintInput },
+          }
+          break
+        }
+        case DirectoryFieldType.datetime: {
+          updateConstraint = {
+            datetime_constraint: { update: constraint as Prisma.DateTimeFieldContraintUpdateWithoutConstraintInput },
+          }
+          break
+        }
+        case DirectoryFieldType.time: {
+          updateConstraint = {
+            time_constraint: { update: constraint as Prisma.TimeFieldContraintUpdateWithoutConstraintInput },
+          }
+          break
+        }
+        default:
+          throw Error('not supported type')
       }
     }
 
